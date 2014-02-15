@@ -53,5 +53,11 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_dull"/>
+      
+      <item
+        android:id="@+id/action_invert"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_invert"/>
 
 </menu>

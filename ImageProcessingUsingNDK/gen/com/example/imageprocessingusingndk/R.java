@@ -27,19 +27,45 @@ public final class R {
         public static final int sampleimage=0x7f020003;
     }
     public static final class id {
-        public static final int action_settings=0x7f080001;
-        public static final int imgView=0x7f080000;
+        public static final int action_blue=0x7f080008;
+        public static final int action_bright=0x7f08000a;
+        public static final int action_dull=0x7f08000b;
+        public static final int action_gray=0x7f080004;
+        public static final int action_green=0x7f080007;
+        public static final int action_invert=0x7f08000c;
+        public static final int action_red=0x7f080006;
+        public static final int action_reset=0x7f080003;
+        public static final int action_sepia=0x7f080009;
+        public static final int action_warmify=0x7f080005;
+        public static final int brightnessSeekBar=0x7f080002;
+        public static final int imgView=0x7f080001;
+        public static final int relLayout=0x7f080000;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
+        public static final int brightness_view=0x7f030001;
     }
     public static final class menu {
         public static final int main=0x7f070000;
     }
     public static final class string {
+        public static final int action_blue=0x7f050007;
+        public static final int action_bright=0x7f05000a;
+        public static final int action_dull=0x7f05000b;
+        public static final int action_gray=0x7f050008;
+        public static final int action_green=0x7f050006;
+        public static final int action_invert=0x7f050010;
+        public static final int action_red=0x7f050005;
+        public static final int action_reset=0x7f05000c;
+        public static final int action_sepia=0x7f050009;
         public static final int action_settings=0x7f050001;
+        public static final int action_warmify=0x7f05000d;
         public static final int app_name=0x7f050000;
+        public static final int cancel=0x7f05000f;
+        public static final int gray=0x7f050003;
         public static final int hello_world=0x7f050002;
+        public static final int red=0x7f050004;
+        public static final int set=0x7f05000e;
     }
     public static final class style {
         /** 

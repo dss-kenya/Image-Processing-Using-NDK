@@ -223,15 +223,38 @@ void convertingImageToBlue(AndroidBitmapInfo * infogray, void * pixelsgray,
 
 	for (y=0;y<infogray->height;y++) {
 		argb * line = (argb *)pixelsgray;
-		argb* lineGreen = (argb *)pixelsBlue;
+		argb* lineBlue = (argb *)pixelsBlue;
 
 		for (x=0;x<infogray->width;x++) {
-			lineGreen[x].red = 0;
-			lineGreen[x].green = line[x].red * 0.704 + 0 * line[x].green + line[x].blue * 0.006;
-			lineGreen[x].blue = line[x].red * 0.002 + 0.008 * line[x].green + line[x].blue * 0.050;
+			lineBlue[x].red = 0;
+			lineBlue[x].green = line[x].red * 0.704 + 0 * line[x].green - line[x].blue * 0.006;
+			lineBlue[x].blue = -1.0 * line[x].blue;//line[x].red * 0.002 + 0.008 * line[x].green + line[x].blue * 0.050;
 		}
 		pixelsgray = (char *) pixelsgray + infogray->stride;
 		pixelsBlue = (char *) pixelsBlue + infoBlue->stride;
+	}
+}
+
+void convertingImageToGreen(AndroidBitmapInfo * infogray, void * pixelsgray,
+		void * pixelsGreen, AndroidBitmapInfo * infoGreen) {
+	int x,y;
+
+	for (y=0;y<infogray->height;y++) {
+		argb * line = (argb *)pixelsgray;
+		argb* lineGreen = (argb *)pixelsGreen;
+
+		// Turquoise
+		//lineGreen[x].red = line[x].red * 0.150 +0.794 * line[x].green + line[x].blue * 0;
+		//lineGreen[x].green = line[x].red * 0 + 0.894 * line[x].green + line[x].blue * 0.006;
+		//lineGreen[x].blue = line[x].red * 0.002 + 0.008 * line[x].green + line[x].blue * 0.050;
+
+		for (x=0;x<infogray->width;x++) {
+			lineGreen[x].red = line[x].red * 0.960 - 0.050 * line[x].green + line[x].blue * 0;
+			lineGreen[x].green = -1.0 * line[x].green;
+			lineGreen[x].blue = 0.0;
+		}
+		pixelsgray = (char *) pixelsgray + infogray->stride;
+		pixelsGreen = (char *) pixelsGreen + infoGreen->stride;
 	}
 }
 
@@ -472,6 +495,9 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	    AndroidBitmap_unlockPixels(env, bitmapOut);
 }
 
+/**
+ * Converts image to green (applying a green filter)
+ */
 JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_convertToGreen(JNIEnv * env,
 		jobject jobj, jobject bitmapIn, jobject bitmapOut) {
 
@@ -503,32 +529,7 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	    }
 
-	    for (y=0;y<infogray.height;y++) {
-	    	argb * line = (argb *)pixelsgray;
-	    	argb* lineGreen = (argb *)pixelsGreen;
-
-	    	// Turquoise
-	    	//lineGreen[x].red = line[x].red * 0.150 +0.794 * line[x].green + line[x].blue * 0;
-	    	//lineGreen[x].green = line[x].red * 0 + 0.894 * line[x].green + line[x].blue * 0.006;
-	    	//lineGreen[x].blue = line[x].red * 0.002 + 0.008 * line[x].green + line[x].blue * 0.050;
-
-	    	// green layer
-	    	//lineGreen[x].red = line[x].red * 0.100 + 0.720 * line[x].green + line[x].blue * 0.180;
-	    	//lineGreen[x].green = line[x].red *0 + 0.994 * line[x].green + line[x].blue * 0.006;
-	    	//lineGreen[x].blue = 0;
-
-	    	for (x=0;x<infogray.width;x++) {
-	    		//0.704
-	    		// red 0.960
-	    		lineGreen[x].red = line[x].red * 0.960 + 0.050 * line[x].green;
-	    		lineGreen[x].green = 1.0 * line[x].green;
-	    		lineGreen[x].blue = 0;
-	    		lineGreen[x].alpha = line[x].alpha;
-	    	}
-	    	pixelsgray = (char *) pixelsgray + infogray.stride;
-	    	pixelsGreen = (char *) pixelsGreen + infoGreen.stride;
-	    }
-
+	    convertingImageToGreen(&infogray, pixelsgray, pixelsGreen, &infoGreen);
 	    AndroidBitmap_unlockPixels(env, bitmapIn);
 	    AndroidBitmap_unlockPixels(env, bitmapOut);
 }
