@@ -1,4 +1,4 @@
-obj/local/armeabi/objs/ImageProcessingUsingNDK/ImageProcessingUsingNDK.o: \
+obj/local/armeabi-v7a/objs/ImageProcessingUsingNDK/ImageProcessingUsingNDK.o: \
  jni/ImageProcessingUsingNDK.cpp \
  E:/Software/android-ndk-r9c-windows-x86/android-ndk-r9c/platforms/android-19/arch-arm/usr/include/jni.h \
  E:/Software/android-ndk-r9c-windows-x86/android-ndk-r9c/platforms/android-19/arch-arm/usr/include/sys/cdefs.h \
