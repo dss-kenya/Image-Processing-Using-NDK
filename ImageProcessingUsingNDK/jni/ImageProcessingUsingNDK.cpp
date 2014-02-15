@@ -147,6 +147,18 @@ void convertingImageToSepia(AndroidBitmapInfo * infoColor, void *  pixelsColor,
 	}
 }
 
+int truncate(int value) {
+	if(value < 0) {
+		return 0;
+	}
+
+	if(value > 255) {
+		return 255;
+	}
+
+	return value;
+}
+
 /**
  * Increases the brightness of an image based on the value received.
  * The values could be between 1 and 10
@@ -180,6 +192,48 @@ void increasingBrightnessOfImage(AndroidBitmapInfo * infogray, void* pixelsgray,
 	}
 }
 
+/**
+ * Operations for inverting the current image
+ */
+void invertImage(AndroidBitmapInfo * infogray, void * pixelsgray) {
+	int x,y ;
+	int red, green, blue;
+
+	for (y=0;y<infogray->height;y++) {
+		uint8_t * line = (uint8_t *)pixelsgray;
+		for (x=0;x<infogray->width;x++) {
+
+			// subtract the value from 255
+			red = 255 - ((int)((line[x] & 0x00FF0000) >> 16));
+			green = 255 - ((int)((line[x] & 0x0000FF00) >> 8));
+			blue = 255 - ((int)((line[x] & 0x000000FF)));
+
+			line[x] = ((red << 16) & 0x00FF0000) |
+					((green << 8) & 0x0000FF00) |
+					(blue & 0x000000FF);
+		}
+		pixelsgray = (char *) pixelsgray + infogray->stride;
+	}
+}
+
+void convertingImageToBlue(AndroidBitmapInfo * infogray, void * pixelsgray,
+		void * pixelsBlue, AndroidBitmapInfo * infoBlue) {
+
+	int x,y;
+
+	for (y=0;y<infogray->height;y++) {
+		argb * line = (argb *)pixelsgray;
+		argb* lineGreen = (argb *)pixelsBlue;
+
+		for (x=0;x<infogray->width;x++) {
+			lineGreen[x].red = 0;
+			lineGreen[x].green = line[x].red * 0.704 + 0 * line[x].green + line[x].blue * 0.006;
+			lineGreen[x].blue = line[x].red * 0.002 + 0.008 * line[x].green + line[x].blue * 0.050;
+		}
+		pixelsgray = (char *) pixelsgray + infogray->stride;
+		pixelsBlue = (char *) pixelsBlue + infoBlue->stride;
+	}
+}
 
 /**
  * Function that converts the image to grayscale image
@@ -193,7 +247,6 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	AndroidBitmapInfo	grayImageInfo;
 	void*				pixelsGrayColor;
 	int					ret;
-	int 				x,y;
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infoColor)) < 0) {
 		LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -244,7 +297,6 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	AndroidBitmapInfo	redImageInfo;
 	void*				pixelsRedColor;
 	int					ret;
-	int 				x,y;
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infoColor)) < 0) {
 		LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -286,7 +338,6 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_war
 	AndroidBitmapInfo	warmImageColor;
 	void*				pixelsWarmColor;
 	int					ret;
-	int 				x,y;
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infoColor)) < 0) {
 		LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -317,6 +368,9 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_war
 	}COFFEE_END();
 }
 
+/**
+ * Converts image from rgb mode to sepia
+ */
 JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_convertToSepia(JNIEnv * env,
 		jobject jobj, jobject bitmapIn, jobject bitmapOut, jclass cls) {
 
@@ -325,7 +379,6 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	AndroidBitmapInfo	sepiaImageColor;
 	void*				pixelsSepia;
 	int					ret;
-	int 				x,y;
 
 	if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infoColor)) < 0) {
 		LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -356,27 +409,15 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	}COFFEE_END();
 }
 
-int truncate(int value) {
-	if(value < 0) {
-		return 0;
-	}
-
-	if(value > 255) {
-		return 255;
-	}
-
-	return value;
-}
-
+/*
+ * increases the brightness of the image based on user input
+ */
 JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_increaseBrightness(JNIEnv * env,
 		jobject jobj, jobject bitmapIn, jfloat brightnessValue) {
 
 		AndroidBitmapInfo  	infogray;
 	    void*              	pixelsgray;
 	    int                	ret;
-	    int 				y;
-	    int             	x;
-	    int					red, green, blue;
 	    uint8_t 			save;
 
 	    if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infogray)) < 0) {
@@ -390,6 +431,131 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inc
 
 	    increasingBrightnessOfImage(&infogray, pixelsgray, brightnessValue);
 	    AndroidBitmap_unlockPixels(env, bitmapIn);
+}
+
+/**
+ * Converts image to blue scale (almost like applying a blue filter)
+ */
+JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_convertToBlue(JNIEnv * env,
+		jobject jobj, jobject bitmapIn, jobject bitmapOut) {
+
+		AndroidBitmapInfo  	infogray;
+	    void*              	pixelsgray;
+	    AndroidBitmapInfo 	infoBlue;
+	    void* 				pixelsBlue;
+	    int                	ret;
+	    int 				y;
+	    int             	x;
+	    int					red, green, blue;
+	    uint8_t 			save;
+
+	    if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infogray)) < 0) {
+	    	LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
+	    	return;
+	    }
+
+	    if ((ret = AndroidBitmap_getInfo(env, bitmapOut, &infoBlue)) < 0) {
+	    	LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
+	    	return;
+	    }
+
+	    if ((ret = AndroidBitmap_lockPixels(env, bitmapIn, &pixelsgray)) < 0) {
+	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	    }
+
+	    if ((ret = AndroidBitmap_lockPixels(env, bitmapOut, &pixelsBlue)) < 0) {
+	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	    }
+
+	    convertingImageToBlue(&infogray, pixelsgray, pixelsBlue, &infoBlue);
+	    AndroidBitmap_unlockPixels(env, bitmapIn);
+	    AndroidBitmap_unlockPixels(env, bitmapOut);
+}
+
+JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_convertToGreen(JNIEnv * env,
+		jobject jobj, jobject bitmapIn, jobject bitmapOut) {
+
+		AndroidBitmapInfo  	infogray;
+	    void*              	pixelsgray;
+	    AndroidBitmapInfo 	infoGreen;
+	    void* 				pixelsGreen;
+	    int                	ret;
+	    int 				y;
+	    int             	x;
+	    int					red, green, blue;
+	    uint8_t 			save;
+
+	    if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infogray)) < 0) {
+	    	LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
+	    	return;
+	    }
+
+	    if ((ret = AndroidBitmap_getInfo(env, bitmapOut, &infoGreen)) < 0) {
+	    	LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
+	    	return;
+	    }
+
+	    if ((ret = AndroidBitmap_lockPixels(env, bitmapIn, &pixelsgray)) < 0) {
+	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	    }
+
+	    if ((ret = AndroidBitmap_lockPixels(env, bitmapOut, &pixelsGreen)) < 0) {
+	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	    }
+
+	    for (y=0;y<infogray.height;y++) {
+	    	argb * line = (argb *)pixelsgray;
+	    	argb* lineGreen = (argb *)pixelsGreen;
+
+	    	// Turquoise
+	    	//lineGreen[x].red = line[x].red * 0.150 +0.794 * line[x].green + line[x].blue * 0;
+	    	//lineGreen[x].green = line[x].red * 0 + 0.894 * line[x].green + line[x].blue * 0.006;
+	    	//lineGreen[x].blue = line[x].red * 0.002 + 0.008 * line[x].green + line[x].blue * 0.050;
+
+	    	// green layer
+	    	//lineGreen[x].red = line[x].red * 0.100 + 0.720 * line[x].green + line[x].blue * 0.180;
+	    	//lineGreen[x].green = line[x].red *0 + 0.994 * line[x].green + line[x].blue * 0.006;
+	    	//lineGreen[x].blue = 0;
+
+	    	for (x=0;x<infogray.width;x++) {
+	    		//0.704
+	    		// red 0.960
+	    		lineGreen[x].red = line[x].red * 0.960 + 0.050 * line[x].green;
+	    		lineGreen[x].green = 1.0 * line[x].green;
+	    		lineGreen[x].blue = 0;
+	    		lineGreen[x].alpha = line[x].alpha;
+	    	}
+	    	pixelsgray = (char *) pixelsgray + infogray.stride;
+	    	pixelsGreen = (char *) pixelsGreen + infoGreen.stride;
+	    }
+
+	    AndroidBitmap_unlockPixels(env, bitmapIn);
+	    AndroidBitmap_unlockPixels(env, bitmapOut);
+}
+
+/**
+ * Inverts the current image
+ */
+JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_invertImage(JNIEnv * env, jobject jobj, jobject bitmapIn) {
+	AndroidBitmapInfo  	infogray;
+	void*              	pixelsgray;
+	int                	ret;
+	int 				y;
+	int             	x;
+	int					red, green, blue;
+	uint8_t 			save;
+
+	if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infogray)) < 0) {
+		LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		return;
+	}
+
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapIn, &pixelsgray)) < 0) {
+		LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
+
+	invertImage(&infogray, pixelsgray);
+	AndroidBitmap_unlockPixels(env, bitmapIn);
 }
 
 //#ifdef _cplusplus

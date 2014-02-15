@@ -16,4 +16,5 @@
     <string name="action_warmify">Warmify</string>
     <string name="set">Set</string>
     <string name="cancel">Cancel</string>
+    <string name="action_invert">Invert</string>
 </resources>

@@ -42,6 +42,9 @@ public class MainActivity extends Activity {
 	public native Bitmap warmifyImage(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
 	public native Bitmap convertToSepia(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
 	public native Bitmap increaseBrightness(Bitmap bitmapIn, float brightnessValue);
+	public native Bitmap convertToBlue(Bitmap bitmapIn, Bitmap bitmapOut);
+	public native Bitmap convertToGreen(Bitmap bitmapIn, Bitmap bitmapOut);
+	public native Bitmap invertImage(Bitmap bitmapIn);
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +84,7 @@ public class MainActivity extends Activity {
 			break;
 			
 		case R.id.action_blue:
-			
+			convertImageToBlue();
 			break;
 			
 		case R.id.action_bright:
@@ -101,7 +104,7 @@ public class MainActivity extends Activity {
 			break;
 			
 		case R.id.action_green:
-		
+			convertImageToGreen();
 			break;
 			
 		case R.id.action_reset:
@@ -110,6 +113,10 @@ public class MainActivity extends Activity {
 			
 		case R.id.action_sepia:
 			convertImageToSepia();
+			break;
+			
+		case R.id.action_invert:
+			invertImage();
 			break;
 
 		default:
@@ -120,9 +127,34 @@ public class MainActivity extends Activity {
 	}
 	
 	/**
+	 * Inverts the current image
+	 */
+	private void invertImage() {
+		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
+		Bitmap bitmapWip = mBmp.copy(Config.ARGB_8888, true);
+		invertImage(bitmapWip);
+		mImgView.setImageBitmap(bitmapWip);
+	}
+	
+	private void convertImageToBlue() {
+		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
+		Bitmap bitmapWip = Bitmap.createBitmap(width, height, mBmp.getConfig());
+		convertToBlue(mBmp, bitmapWip);
+		mImgView.setImageBitmap(bitmapWip);
+	}
+	
+	private void convertImageToGreen() {
+		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
+		Bitmap bitmapWip = Bitmap.createBitmap(width, height, mBmp.getConfig());
+		convertToGreen(mBmp, bitmapWip);
+		mImgView.setImageBitmap(bitmapWip);
+	}
+	
+	/**
 	 * Increasing brightness of the image
 	 */
 	private void increaseBrightness(float value) {
+		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
 		Bitmap bitmapWip = mBmp.copy(Config.ARGB_8888, true);
 		increaseBrightness(bitmapWip, value);
 		mImgView.setImageBitmap(bitmapWip);
