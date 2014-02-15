@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
 	public native Bitmap warmifyImage(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
 	public native Bitmap convertToSepia(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
 	public native Bitmap increaseBrightness(Bitmap bitmapIn, float brightnessValue);
+	public native Bitmap reduceBrightness(Bitmap bitmapIn, float brightnessValue);
 	public native Bitmap convertToBlue(Bitmap bitmapIn, Bitmap bitmapOut);
 	public native Bitmap convertToGreen(Bitmap bitmapIn, Bitmap bitmapOut);
 	public native Bitmap invertImage(Bitmap bitmapIn);
@@ -92,7 +93,7 @@ public class MainActivity extends Activity {
 			break;
 			
 		case R.id.action_dull:
-			
+			reduceBrightness(2.5f);
 			break;
 			
 		case R.id.action_gray:
@@ -157,6 +158,13 @@ public class MainActivity extends Activity {
 		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
 		Bitmap bitmapWip = mBmp.copy(Config.ARGB_8888, true);
 		increaseBrightness(bitmapWip, value);
+		mImgView.setImageBitmap(bitmapWip);
+	}
+	
+	private void reduceBrightness(float value) {
+		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
+		Bitmap bitmapWip = mBmp.copy(Config.ARGB_8888, true);
+		reduceBrightness(bitmapWip, value);
 		mImgView.setImageBitmap(bitmapWip);
 	}
 	

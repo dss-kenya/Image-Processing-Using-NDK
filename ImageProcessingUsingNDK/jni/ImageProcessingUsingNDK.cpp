@@ -193,6 +193,38 @@ void increasingBrightnessOfImage(AndroidBitmapInfo * infogray, void* pixelsgray,
 }
 
 /**
+ * Reduces the contrast of the image
+ */
+void reduceBrightnessOfImage(AndroidBitmapInfo * infogray, void* pixelsgray,
+		float brightnessValue) {
+
+	// For reference :  http://www.easyrgb.com/index.php?X=MATH
+	//					(0.2126*R) + (0.7152*G) + (0.0722*B) -> Luminance
+
+	int red, green,blue;
+	int y,x;
+
+	for (y=0;y<infogray->height;y++) {
+		uint8_t * line = (uint8_t *)pixelsgray;
+		for (x=0;x<infogray->width;x++) {
+
+			red = (int)((line[x] & 0x00FF0000) >> 16);
+			green = (int)((line[x] & 0x0000FF00) >> 8);
+			blue = (int)((line[x] & 0x000000FF));
+
+			red = truncate((int)(red / brightnessValue));
+			green = truncate((int)(green / brightnessValue));
+			blue= truncate((int)(blue / brightnessValue));
+
+			line[x] = ((red << 16) & 0x00FF0000) |
+					((green << 8) & 0x0000FF00) |
+					(blue & 0x000000FF);
+		}
+		pixelsgray = (char *) pixelsgray + infogray->stride;
+	}
+}
+
+/**
  * Operations for inverting the current image
  */
 void invertImage(AndroidBitmapInfo * infogray, void * pixelsgray) {
@@ -216,6 +248,9 @@ void invertImage(AndroidBitmapInfo * infogray, void * pixelsgray) {
 	}
 }
 
+/**
+ * Applies the blue filter on the image
+ */
 void convertingImageToBlue(AndroidBitmapInfo * infogray, void * pixelsgray,
 		void * pixelsBlue, AndroidBitmapInfo * infoBlue) {
 
@@ -235,6 +270,9 @@ void convertingImageToBlue(AndroidBitmapInfo * infogray, void * pixelsgray,
 	}
 }
 
+/**
+ * Applies the green filter on the image
+ */
 void convertingImageToGreen(AndroidBitmapInfo * infogray, void * pixelsgray,
 		void * pixelsGreen, AndroidBitmapInfo * infoGreen) {
 	int x,y;
@@ -453,6 +491,30 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inc
 	    }
 
 	    increasingBrightnessOfImage(&infogray, pixelsgray, brightnessValue);
+	    AndroidBitmap_unlockPixels(env, bitmapIn);
+}
+
+/**
+ * reduces the contrast of the image
+ */
+JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_reduceBrightness(JNIEnv * env,
+		jobject jobj, jobject bitmapIn, jfloat brightnessValue) {
+
+		AndroidBitmapInfo  	infogray;
+	    void*              	pixelsgray;
+	    int                	ret;
+	    uint8_t 			save;
+
+	    if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infogray)) < 0) {
+	    	LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
+	    	return;
+	    }
+
+	    if ((ret = AndroidBitmap_lockPixels(env, bitmapIn, &pixelsgray)) < 0) {
+	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	    }
+
+	    reduceBrightnessOfImage(&infogray, pixelsgray, brightnessValue);
 	    AndroidBitmap_unlockPixels(env, bitmapIn);
 }
 
