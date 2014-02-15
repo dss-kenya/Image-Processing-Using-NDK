@@ -13,3 +13,5 @@ References:
 [3] http://ruckus.tumblr.com/post/18055652108/writing-a-basic-image-filter-in-android-using-ndk
 
 [4] http://www.tannerhelland.com/3643/grayscale-image-algorithm-vb6/
+
+[5] http://www.codeproject.com/Articles/1989/Image-Processing-for-Dummies-with-C-and-GDI-Part-1
