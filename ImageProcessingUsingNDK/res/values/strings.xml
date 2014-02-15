@@ -4,5 +4,16 @@
     <string name="app_name">ImageProcessingUsingNDK</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="gray">Gray</string>
+    <string name="red">Red</string>
+    <string name="action_red">Red</string>
+    <string name="action_green">Green</string>
+    <string name="action_blue">Blue</string>
+    <string name="action_gray">Gray</string>
+    <string name="action_sepia">Sepia</string>
+    <string name="action_bright">Bright</string>
+    <string name="action_dull">Dull</string>
+    <string name="action_reset">Reset Image</string>
+    <string name="action_warmify">Warmify</string>
 
 </resources>

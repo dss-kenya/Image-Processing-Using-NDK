@@ -1,9 +1,57 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_reset"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="@string/action_reset"/>
+    
+     <item
+        android:id="@+id/action_gray"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_gray"/>
+     
+     <item
+         android:id="@+id/action_warmify"
+         android:orderInCategory="100"
+         android:showAsAction="never"
+         android:title="@string/action_warmify"/>
+     
+     <item
+        android:id="@+id/action_red"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_red"/>
+     
+     <item
+        android:id="@+id/action_green"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_green"/>
+     
+      <item
+        android:id="@+id/action_blue"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_blue"/>
+      
+      <item
+        android:id="@+id/action_sepia"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_sepia"/>
+      
+      <item
+        android:id="@+id/action_bright"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_bright"/>
+      
+      <item
+        android:id="@+id/action_dull"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_dull"/>
 
 </menu>

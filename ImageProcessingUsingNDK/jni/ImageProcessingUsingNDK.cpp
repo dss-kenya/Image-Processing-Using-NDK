@@ -18,7 +18,92 @@ typedef struct {
 	uint8_t blue;
 }argb;
 
+//#ifdef _cplusplus
 extern "C" {
+//#endif
+
+/**
+ * performs operations on the image to convert the image to gray
+ */
+void convertingToGray(void * pixelsColor, void * pixelsGrayColor,
+		AndroidBitmapInfo * infoColor, AndroidBitmapInfo * grayImageInfo) {
+	int y,x;
+
+	for (y=0;y<infoColor->height;y++) {
+		argb * line = (argb *) pixelsColor;
+		uint8_t * grayline = (uint8_t *) pixelsGrayColor;
+
+		for (x=0;x<infoColor->width;x++) {
+			//grayline[x] = 0.21 * line[x].red + 0.71 * line[x].green + 0.07 * line[x].blue;
+			grayline[x] = 0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue;
+		}
+
+		pixelsColor = (char *)pixelsColor + infoColor->stride;
+		pixelsGrayColor = (char *) pixelsGrayColor + grayImageInfo->stride;
+	}
+}
+
+/**
+ * Performs operations to convert an image into red scale
+ */
+void convertingImageToRed(AndroidBitmapInfo * infoColor, void * pixelsColor,
+		void * pixelsRedColor, AndroidBitmapInfo * redImageInfo) {
+	int y,x;
+
+	for (y=0;y<infoColor->height;y++) {
+		argb * greyline = (argb *) pixelsColor;
+		argb * sepialine = (argb *) pixelsRedColor;
+
+		for (x=0;x<infoColor->width;x++) {
+			sepialine[x].red =  0.1 *greyline[x].red;
+			sepialine[x].green = 0.9;
+			sepialine[x].blue = 0;
+			sepialine[x].alpha = greyline[x].alpha;
+		}
+
+		pixelsColor = (char *)pixelsColor + infoColor->stride;
+		pixelsRedColor = (char *) pixelsRedColor + redImageInfo->stride;
+	}
+}
+
+/**
+ * Performs operations on the image to warmify it
+ */
+void warmifyingImage(AndroidBitmapInfo * infoColor, void * pixelsColor,
+		void * pixelsWarmColor , AndroidBitmapInfo * warmImageColor) {
+	int y,x;
+
+	for (y=0;y<infoColor->height;y++) {
+		argb * line = (argb *) pixelsColor;
+		argb * warmline = (argb *) pixelsWarmColor;
+
+		/* 	greenline[x].red = 0 * line[x].red + 0.5* line[x].green + 0 * line[x].blue;
+			greenline[x].green = 0.803 * line[x].green + 0.08 * line[x].blue; //0.009 * line[x].red + 0.803 * line[x].green + 0.008 * line[x].blue;
+			greenline[x].blue =  0.0;
+			greenline[x].alpha = line[x].alpha;
+
+			greenline[x].red = 0.5* line[x].red;// 0 * line[x].red + 0.02* line[x].green + 0 * line[x].blue;
+			greenline[x].green = line[x].green;//0 * line[x].red + 1.0 * line[x].green + 0.0 * line[x].blue; //0.009 * line[x].red + 0.803 * line[x].green + 0.008 * line[x].blue;
+			greenline[x].blue =0* line[x].blue;
+			greenline[x].alpha = line[x].alpha;
+		 */
+		for (x=0;x<infoColor->width;x++) {
+			// 0 * line[x].red + 0.02* line[x].green + 0 * line[x].blue;
+			warmline[x].red = 0.65 * line[x].red;
+
+			//0 * line[x].red + 1.0 * line[x].green + 0.0 * line[x].blue; //0.009 * line[x].red + 0.803 * line[x].green + 0.008 * line[x].blue;
+			warmline[x].green = 1.098 * line[x].green;
+
+			//1.1 * line[x].blue;
+			warmline[x].blue =0;
+
+			warmline[x].alpha = line[x].alpha;
+		}
+
+		pixelsColor = (char *)pixelsColor + infoColor->stride;
+		pixelsWarmColor = (char *) pixelsWarmColor + warmImageColor->stride;
+	}
+}
 
 
 /**
@@ -69,27 +154,10 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 		LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	}
 
-	for (y=0;y<infoColor.height;y++) {
-		argb * line = (argb *) pixelsColor;
-		uint8_t * grayline = (uint8_t *) pixelsGrayColor;
-
-		for (x=0;x<infoColor.width;x++) {
-			//grayline[x] = 0.21 * line[x].red + 0.71 * line[x].green + 0.07 * line[x].blue;
-			grayline[x] = 0.3 * line[x].red + 0.59 * line[x].green + 0.11*line[x].blue;
-		}
-
-		pixelsColor = (char *)pixelsColor + infoColor.stride;
-		pixelsGrayColor = (char *) pixelsGrayColor + grayImageInfo.stride;
-	}
+	convertingToGray(&pixelsColor, &pixelsGrayColor, &infoColor, &grayImageInfo);
 
 	AndroidBitmap_unlockPixels(env,bitmapIn);
 	AndroidBitmap_unlockPixels(env, bitmapOut);
-
-	//}COFFEE_CATCH() {
-	//	__android_log_print(ANDROID_LOG_ERROR,APP_NAME,"error : %s ", coffeecatch_get_message());
-	/*jclass clss = env->FindClass("java/lang/RuntimeException");
-			env->ThrowNew(clss,coffeecatch_get_message());*/
-	//}COFFEE_END();
 }
 
 JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_convertToRed(JNIEnv * env,
@@ -124,25 +192,9 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	}
 
 	COFFEE_TRY() {
-		for (y=0;y<infoColor.height;y++) {
-			argb * greyline = (argb *) pixelsColor;
-			argb * sepialine = (argb *) pixelsRedColor;
-
-			for (x=0;x<infoColor.width;x++) {
-				sepialine[x].red =  0.1 *greyline[x].red;
-				sepialine[x].green = 0.9;
-				sepialine[x].blue = 0;
-				sepialine[x].alpha = greyline[x].alpha;
-			}
-
-			pixelsColor = (char *)pixelsColor + infoColor.stride;
-			pixelsRedColor = (char *) pixelsRedColor + redImageInfo.stride;
-		}
-
+		convertingImageToRed(&infoColor, &pixelsColor, &pixelsRedColor, &redImageInfo);
 		AndroidBitmap_unlockPixels(env,bitmapIn);
 		AndroidBitmap_unlockPixels(env, bitmapOut);
-
-		LOG_E("infoColor.format : %d", redImageInfo.format);
 	}COFFEE_CATCH() {
 		LOG_E("error : %s", coffeecatch_get_message());
 	}COFFEE_END();
@@ -151,13 +203,13 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 /**
  * Converts the bitmap to green color
  */
-JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_convertToGreen(JNIEnv * env,
+JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_warmifyImage(JNIEnv * env,
 		jobject jobj, jobject bitmapIn, jobject bitmapOut, jclass cls) {
 
 	AndroidBitmapInfo 	infoColor;
 	void*				pixelsColor;
-	AndroidBitmapInfo	greenImageColor;
-	void*				pixelsGreenColor;
+	AndroidBitmapInfo	warmImageColor;
+	void*				pixelsWarmColor;
 	int					ret;
 	int 				x,y;
 
@@ -167,7 +219,7 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 		return;
 	}
 
-	if ((ret = AndroidBitmap_getInfo(env, bitmapOut, &greenImageColor)) < 0) {
+	if ((ret = AndroidBitmap_getInfo(env, bitmapOut, &warmImageColor)) < 0) {
 		LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
 		env->ThrowNew(cls,"AndroidBitmap_getInfo() bitmapOut failed !");
 		return;
@@ -177,40 +229,14 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 		LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	}
 
-	if ((ret = AndroidBitmap_lockPixels(env, bitmapOut, &pixelsGreenColor)) < 0) {
+	if ((ret = AndroidBitmap_lockPixels(env, bitmapOut, &pixelsWarmColor)) < 0) {
 		LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	}
 
 	COFFEE_TRY() {
-		for (y=0;y<infoColor.height;y++) {
-			argb * line = (argb *) pixelsColor;
-			argb * greenline = (argb *) pixelsGreenColor;
-
-			/* greenline[x].red = 0 * line[x].red + 0.5* line[x].green + 0 * line[x].blue;
-			   greenline[x].green = 0.803 * line[x].green + 0.08 * line[x].blue; //0.009 * line[x].red + 0.803 * line[x].green + 0.008 * line[x].blue;
-			   greenline[x].blue =  0.0;
-			   greenline[x].alpha = line[x].alpha;
-
-			   greenline[x].red = 0.5* line[x].red;// 0 * line[x].red + 0.02* line[x].green + 0 * line[x].blue;
-				greenline[x].green = line[x].green;//0 * line[x].red + 1.0 * line[x].green + 0.0 * line[x].blue; //0.009 * line[x].red + 0.803 * line[x].green + 0.008 * line[x].blue;
-				greenline[x].blue =0* line[x].blue;
-				greenline[x].alpha = line[x].alpha;
-							*/
-			for (x=0;x<infoColor.width;x++) {
-				greenline[x].red = 0.65 * line[x].red;// 0 * line[x].red + 0.02* line[x].green + 0 * line[x].blue;
-				greenline[x].green = 1.098 * line[x].green;//0 * line[x].red + 1.0 * line[x].green + 0.0 * line[x].blue; //0.009 * line[x].red + 0.803 * line[x].green + 0.008 * line[x].blue;
-				greenline[x].blue =0;//1.1 * line[x].blue;
-				greenline[x].alpha = line[x].alpha;
-			}
-
-			pixelsColor = (char *)pixelsColor + infoColor.stride;
-			pixelsGreenColor = (char *) pixelsGreenColor + greenImageColor.stride;
-		}
-
+		warmifyingImage(&infoColor, &pixelsColor, &pixelsWarmColor, &warmImageColor);
 		AndroidBitmap_unlockPixels(env,bitmapIn);
 		AndroidBitmap_unlockPixels(env, bitmapOut);
-
-		LOG_E("infoColor.format : %d", greenImageColor.format);
 	}COFFEE_CATCH() {
 		LOG_E("error : %s", coffeecatch_get_message());
 	}COFFEE_END();
@@ -289,24 +315,27 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	}COFFEE_END();
 }
 
-jint truncate(int value) {
+int truncate(int value) {
 	if(value < 0) {
 		return 0;
-	}else if(value > 255) {
-		return 255;
-	}else {
-		return value;
 	}
+
+	if(value > 255) {
+		return 255;
+	}
+
+	return value;
 }
 
-/*JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_increaseBrightness(JNIEnv * env,
-		jobject jobj, jobject bitmapIn, int direction) {
+JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_increaseBrightness(JNIEnv * env,
+		jobject jobj, jobject bitmapIn, jint direction) {
 
 		AndroidBitmapInfo  	infogray;
 	    void*              	pixelsgray;
 	    int                	ret;
 	    int 				y;
 	    int             	x;
+	    int					red, green, blue;
 	    uint8_t 			save;
 
 	    //http://www.easyrgb.com/index.php?X=MATH
@@ -320,35 +349,33 @@ jint truncate(int value) {
 	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	    }
 
+	    LOG_E("infogray.format : %d " ,infogray.format);
+
 	    for (y=0;y<infogray.height;y++) {
-	    	//uint8_t * grayline = (uint8_t *) pixelsgray;
-	    	argb * line = (argb *)line;
-	    	int v;
+	    	uint8_t * line = (uint8_t *)pixelsgray;
 	    	for (x=0;x<infogray.width;x++) {
-	    		line[x].red = truncate(line[x].red + 5);
-	    		line[x].green=truncate( line[x].green + 5);
-	    		line[x].blue = truncate(line[x].blue + 5);
 
-	    		//v = (int) grayline[x];
+	    		red = (int)((line[x] & 0x00FF0000) >> 16);
+	    		green = (int)((line[x] & 0x0000FF00) >> 8);
+	    		blue = (int)((line[x] & 0x000000FF));
 
-	    		if (direction == 1)
-	    			v -=5;
-	    		else
-	    			v += 5;
-	    		if (v >= 255) {
-	    			grayline[x] = 255;
-	    		} else if (v <= 0) {
-	    			grayline[x] = 0;
-	    		} else {
-	    			grayline[x] = (uint8_t) v;
-	    		}
+	    		red = truncate((int)(red * 1.2));
+	    		green = truncate((int)(green * 1.2));
+	    		blue= truncate((int)(blue * 1.2));
+
+	    		line[x] = ((red << 16) & 0x00FF0000) |
+	    				((green << 8) & 0x0000FF00) |
+	    				(blue & 0x000000FF);
 	    	}
 
 	    	pixelsgray = (char *) pixelsgray + infogray.stride;
 	    }
 
+	    LOG_E("infogray.format : %d " ,infogray.format);
 	    AndroidBitmap_unlockPixels(env, bitmapIn);
 
-}*/
-
 }
+
+//#ifdef _cplusplus
+}
+//#endif
