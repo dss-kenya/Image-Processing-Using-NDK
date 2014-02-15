@@ -196,7 +196,7 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 		LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	}
 
-	convertingToGray(&pixelsColor, &pixelsGrayColor, &infoColor, &grayImageInfo);
+	convertingToGray(pixelsColor, pixelsGrayColor, &infoColor, &grayImageInfo);
 
 	AndroidBitmap_unlockPixels(env,bitmapIn);
 	AndroidBitmap_unlockPixels(env, bitmapOut);
@@ -234,7 +234,7 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	}
 
 	COFFEE_TRY() {
-		convertingImageToRed(&infoColor, &pixelsColor, &pixelsRedColor, &redImageInfo);
+		convertingImageToRed(&infoColor, pixelsColor, pixelsRedColor, &redImageInfo);
 		AndroidBitmap_unlockPixels(env,bitmapIn);
 		AndroidBitmap_unlockPixels(env, bitmapOut);
 	}COFFEE_CATCH() {
@@ -276,7 +276,7 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_war
 	}
 
 	COFFEE_TRY() {
-		warmifyingImage(&infoColor, &pixelsColor, &pixelsWarmColor, &warmImageColor);
+		warmifyingImage(&infoColor, pixelsColor, pixelsWarmColor, &warmImageColor);
 		AndroidBitmap_unlockPixels(env,bitmapIn);
 		AndroidBitmap_unlockPixels(env, bitmapOut);
 	}COFFEE_CATCH() {
@@ -315,7 +315,7 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 	}
 
 	COFFEE_TRY() {
-		convertingImageToSepia(&infoColor, &pixelsColor, &pixelsSepia, &sepiaImageColor);
+		convertingImageToSepia(&infoColor, pixelsColor, pixelsSepia, &sepiaImageColor);
 		AndroidBitmap_unlockPixels(env,bitmapIn);
 		AndroidBitmap_unlockPixels(env, bitmapOut);
 	}COFFEE_CATCH() {
@@ -359,6 +359,8 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inc
 
 	    LOG_E("infogray.format : %d " ,infogray.format);
 
+	    // (0.2126*R) + (0.7152*G) + (0.0722*B) -> Luminance
+
 	    for (y=0;y<infogray.height;y++) {
 	    	uint8_t * line = (uint8_t *)pixelsgray;
 	    	for (x=0;x<infogray.width;x++) {
@@ -367,9 +369,11 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inc
 	    		green = (int)((line[x] & 0x0000FF00) >> 8);
 	    		blue = (int)((line[x] & 0x000000FF));
 
-	    		red = truncate((int)(red * 1.2));
-	    		green = truncate((int)(green * 1.2));
-	    		blue= truncate((int)(blue * 1.2));
+	    		red = truncate((int)(red * 10.2));
+	    		green = truncate((int)(green * 10.2));
+	    		blue= truncate((int)(blue * 10.2));
+
+	    		LOG_E("values: %d", red);
 
 	    		line[x] = ((red << 16) & 0x00FF0000) |
 	    				((green << 8) & 0x0000FF00) |
