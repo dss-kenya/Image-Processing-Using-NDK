@@ -147,6 +147,39 @@ void convertingImageToSepia(AndroidBitmapInfo * infoColor, void *  pixelsColor,
 	}
 }
 
+/**
+ * Increases the brightness of an image based on the value received.
+ * The values could be between 1 and 10
+ */
+void increasingBrightnessOfImage(AndroidBitmapInfo * infogray, void* pixelsgray,
+		float brightnessValue) {
+
+	// For reference :  http://www.easyrgb.com/index.php?X=MATH
+	//					(0.2126*R) + (0.7152*G) + (0.0722*B) -> Luminance
+
+	int red, green,blue;
+	int y,x;
+
+	for (y=0;y<infogray->height;y++) {
+		uint8_t * line = (uint8_t *)pixelsgray;
+		for (x=0;x<infogray->width;x++) {
+
+			red = (int)((line[x] & 0x00FF0000) >> 16);
+			green = (int)((line[x] & 0x0000FF00) >> 8);
+			blue = (int)((line[x] & 0x000000FF));
+
+			red = truncate((int)(red * brightnessValue));
+			green = truncate((int)(green * brightnessValue));
+			blue= truncate((int)(blue * brightnessValue));
+
+			line[x] = ((red << 16) & 0x00FF0000) |
+					((green << 8) & 0x0000FF00) |
+					(blue & 0x000000FF);
+		}
+		pixelsgray = (char *) pixelsgray + infogray->stride;
+	}
+}
+
 
 /**
  * Function that converts the image to grayscale image
@@ -336,7 +369,7 @@ int truncate(int value) {
 }
 
 JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_increaseBrightness(JNIEnv * env,
-		jobject jobj, jobject bitmapIn, jint direction) {
+		jobject jobj, jobject bitmapIn, jfloat brightnessValue) {
 
 		AndroidBitmapInfo  	infogray;
 	    void*              	pixelsgray;
@@ -345,8 +378,6 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inc
 	    int             	x;
 	    int					red, green, blue;
 	    uint8_t 			save;
-
-	    //http://www.easyrgb.com/index.php?X=MATH
 
 	    if ((ret = AndroidBitmap_getInfo(env, bitmapIn, &infogray)) < 0) {
 	    	LOG_E("AndroidBitmap_getInfo() failed ! error=%d", ret);
@@ -357,35 +388,8 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inc
 	    	LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	    }
 
-	    LOG_E("infogray.format : %d " ,infogray.format);
-
-	    // (0.2126*R) + (0.7152*G) + (0.0722*B) -> Luminance
-
-	    for (y=0;y<infogray.height;y++) {
-	    	uint8_t * line = (uint8_t *)pixelsgray;
-	    	for (x=0;x<infogray.width;x++) {
-
-	    		red = (int)((line[x] & 0x00FF0000) >> 16);
-	    		green = (int)((line[x] & 0x0000FF00) >> 8);
-	    		blue = (int)((line[x] & 0x000000FF));
-
-	    		red = truncate((int)(red * 10.2));
-	    		green = truncate((int)(green * 10.2));
-	    		blue= truncate((int)(blue * 10.2));
-
-	    		LOG_E("values: %d", red);
-
-	    		line[x] = ((red << 16) & 0x00FF0000) |
-	    				((green << 8) & 0x0000FF00) |
-	    				(blue & 0x000000FF);
-	    	}
-
-	    	pixelsgray = (char *) pixelsgray + infogray.stride;
-	    }
-
-	    LOG_E("infogray.format : %d " ,infogray.format);
+	    increasingBrightnessOfImage(&infogray, pixelsgray, brightnessValue);
 	    AndroidBitmap_unlockPixels(env, bitmapIn);
-
 }
 
 //#ifdef _cplusplus

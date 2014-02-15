@@ -1,6 +1,10 @@
 package com.example.imageprocessingusingndk;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnShowListener;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -8,10 +12,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.example.imageprocessingusingndk.exception.MyException;
@@ -22,6 +31,7 @@ public class MainActivity extends Activity {
 	private Drawable mImgDrawable;
 	private RelativeLayout mRelLayout;
 	private int width, height;
+	private float brightnessValue;
 	
 	static {
 		System.loadLibrary("ImageProcessingUsingNDK");
@@ -31,7 +41,7 @@ public class MainActivity extends Activity {
 	public native Bitmap convertToRed(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
 	public native Bitmap warmifyImage(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
 	public native Bitmap convertToSepia(Bitmap bitmapIn, Bitmap bitmapOut, Class<?> classObj) throws MyException;
-	public native Bitmap increaseBrightness(Bitmap bitmapIn,int direction);
+	public native Bitmap increaseBrightness(Bitmap bitmapIn, float brightnessValue);
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +85,7 @@ public class MainActivity extends Activity {
 			break;
 			
 		case R.id.action_bright:
-			increaseBrightness();
+			showDialog();
 			break;
 			
 		case R.id.action_dull:
@@ -109,14 +119,60 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private void increaseBrightness() {
-		Bitmap bitmapWip = 
-				Bitmap.createBitmap(width,height, mBmp.getConfig());
-		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
-		increaseBrightness(bitmapWip,1);
+	/**
+	 * Increasing brightness of the image
+	 */
+	private void increaseBrightness(float value) {
+		Bitmap bitmapWip = mBmp.copy(Config.ARGB_8888, true);
+		increaseBrightness(bitmapWip, value);
 		mImgView.setImageBitmap(bitmapWip);
 	}
 	
+	private void showDialog() {
+		final AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+		.setPositiveButton(getString(R.string.set), null)
+		.setNegativeButton(getString(R.string.cancel), null)
+		.create();
+
+		LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = inflater.inflate(R.layout.brightness_view, null);
+		dialog.setView(view);
+
+		final SeekBar brightnessSeekBar = (SeekBar)view.findViewById(R.id.brightnessSeekBar);
+
+		dialog.setOnShowListener(new OnShowListener() {
+			@Override
+			public void onShow(DialogInterface dialogObj) {
+				Button btnSet = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+				btnSet.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						brightnessValue = brightnessSeekBar.getProgress() / 10.0f;
+
+						if(brightnessValue <= 0) {
+							brightnessValue = 1.0f;
+						}
+						dialog.dismiss();
+						increaseBrightness(brightnessValue);
+					}
+				});
+
+				Button btnCancel = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+				btnCancel.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						dialog.dismiss();
+					}
+				});
+			}
+		});
+		
+		dialog.show();
+	}
+	
+	/**
+	 * Converts image to gray
+	 */
 	private void convertImageToGray() {
 		Bitmap bitmapWip = 
 				Bitmap.createBitmap(width,height, Bitmap.Config.ALPHA_8);
@@ -137,6 +193,9 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	/**
+	 * Converts image to red scale
+	 */
 	private void convertImageToRed() {
 		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
 		try {
@@ -159,6 +218,9 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	/**
+	 * Adds warmth to the image
+	 */
 	private void warmifyImage() {
 		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
 		try {
@@ -181,6 +243,9 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	/**
+	 * Converts image to sepia looks
+	 */
 	private void convertImageToSepia() {
 		mRelLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
 		try {
@@ -203,6 +268,9 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	/**
+	 * Sets image back to the original image
+	 */
 	private void resetImage() {
 		mImgView.setImageBitmap(mBmp);
 	}
