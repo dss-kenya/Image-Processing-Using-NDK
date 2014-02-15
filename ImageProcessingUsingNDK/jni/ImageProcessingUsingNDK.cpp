@@ -105,6 +105,48 @@ void warmifyingImage(AndroidBitmapInfo * infoColor, void * pixelsColor,
 	}
 }
 
+/**
+ * Image conversion code to sepia (almost)
+ */
+void convertingImageToSepia(AndroidBitmapInfo * infoColor, void *  pixelsColor,
+		void * pixelsSepia, AndroidBitmapInfo * sepiaImageColor) {
+
+	/*  =====================================	*/
+	/*  For refrerence, SEPIA CODE
+		R' = (R × 0.393 + G × 0.769 + B × 0.189);
+		G' = (R × 0.349 + G × 0.686 + B × 0.168);
+		B' = (R × 0.272 + G × 0.534 + B × 0.131);
+	/* 	===================================== 	*/
+
+	int y,x;
+
+	for (y=0;y<infoColor->height;y++) {
+		argb * line = (argb *) pixelsColor;
+		argb * sepialine = (argb *) pixelsSepia;
+
+		/* sepialine[x].red = 0.293 * line[x].red + 0.169* line[x].green + 0.489 * line[x].blue;
+				sepialine[x].green = 0.349 * line[x].red + 0.483 * line[x].green + 0.168 * line[x].blue;
+				sepialine[x].blue =  0.292 * line[x].red + 0.554 * line[x].green + 0.154 * line[x].blue;
+				sepialine[x].alpha = line[x].alpha; */
+
+		for (x=0;x<infoColor->width;x++) {
+			// 0.393 * line[x].red + 0.369* line[x].green + 0.189 * line[x].blue;
+			/*sepialine[x].red = 0.003 * line[x].red + 0.549* line[x].green + 0.449 * line[x].blue;
+					sepialine[x].green = 0.009 * line[x].red + 0.903 * line[x].green + 0.008 * line[x].blue;
+					sepialine[x].blue =  0.004 * line[x].red + 0.254 * line[x].green + 0.150 * line[x].blue;
+					sepialine[x].alpha = line[x].alpha;*/
+
+			sepialine[x].red = 0.393 * line[x].red + 0.369* line[x].green + 0.189 * line[x].blue;
+			sepialine[x].green = 0.349 * line[x].red + 0.483 * line[x].green + 0.168 * line[x].blue;
+			sepialine[x].blue =  0.292 * line[x].red + 0.554 * line[x].green + 0.154 * line[x].blue;
+			sepialine[x].alpha = line[x].alpha;
+		}
+
+		pixelsColor = (char *)pixelsColor + infoColor->stride;
+		pixelsSepia = (char *) pixelsSepia + sepiaImageColor->stride;
+	}
+}
+
 
 /**
  * Function that converts the image to grayscale image
@@ -272,44 +314,10 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_con
 		LOG_E("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 	}
 
-	/* =================================== */
-	/* For refrerence
-	   R' = (R × 0.393 + G × 0.769 + B × 0.189);
-	   G' = (R × 0.349 + G × 0.686 + B × 0.168);
-	   B' = (R × 0.272 + G × 0.534 + B × 0.131);
-	/* =================================== */
-
 	COFFEE_TRY() {
-		for (y=0;y<infoColor.height;y++) {
-			argb * line = (argb *) pixelsColor;
-			argb * sepialine = (argb *) pixelsSepia;
-
-			/* sepialine[x].red = 0.293 * line[x].red + 0.169* line[x].green + 0.489 * line[x].blue;
-			sepialine[x].green = 0.349 * line[x].red + 0.483 * line[x].green + 0.168 * line[x].blue;
-			sepialine[x].blue =  0.292 * line[x].red + 0.554 * line[x].green + 0.154 * line[x].blue;
-			sepialine[x].alpha = line[x].alpha; */
-
-			for (x=0;x<infoColor.width;x++) {
-				// 0.393 * line[x].red + 0.369* line[x].green + 0.189 * line[x].blue;
-				/*sepialine[x].red = 0.003 * line[x].red + 0.549* line[x].green + 0.449 * line[x].blue;
-				sepialine[x].green = 0.009 * line[x].red + 0.903 * line[x].green + 0.008 * line[x].blue;
-				sepialine[x].blue =  0.004 * line[x].red + 0.254 * line[x].green + 0.150 * line[x].blue;
-				sepialine[x].alpha = line[x].alpha;*/
-
-				sepialine[x].red = 0.393 * line[x].red + 0.369* line[x].green + 0.189 * line[x].blue;
-				sepialine[x].green = 0.349 * line[x].red + 0.483 * line[x].green + 0.168 * line[x].blue;
-				sepialine[x].blue =  0.292 * line[x].red + 0.554 * line[x].green + 0.154 * line[x].blue;
-				sepialine[x].alpha = line[x].alpha;
-			}
-
-			pixelsColor = (char *)pixelsColor + infoColor.stride;
-			pixelsSepia = (char *) pixelsSepia + sepiaImageColor.stride;
-		}
-
+		convertingImageToSepia(&infoColor, &pixelsColor, &pixelsSepia, &sepiaImageColor);
 		AndroidBitmap_unlockPixels(env,bitmapIn);
 		AndroidBitmap_unlockPixels(env, bitmapOut);
-
-		LOG_E("infoColor.format : %d", sepiaImageColor.format);
 	}COFFEE_CATCH() {
 		LOG_E("error : %s", coffeecatch_get_message());
 	}COFFEE_END();
