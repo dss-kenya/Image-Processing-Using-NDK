@@ -1,4 +1,4 @@
-ImageProcessingUsingNDK
+Image-Processing-Using-NDK
 =======================
 
 This project simply plays around with an image for different effects using NDK for a better experiment with NDK 
