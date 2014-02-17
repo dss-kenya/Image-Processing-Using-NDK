@@ -15,3 +15,5 @@ References:
 [4] http://www.tannerhelland.com/3643/grayscale-image-algorithm-vb6/
 
 [5] http://www.codeproject.com/Articles/1989/Image-Processing-for-Dummies-with-C-and-GDI-Part-1
+
+[6] http://android.nakatome.net/2010/04/bitmap-basics.html
