@@ -18,7 +18,7 @@ typedef struct {
 	uint8_t blue;
 }argb;
 
-//#ifdef _cplusplus
+//#ifdef __cplusplus
 extern "C" {
 //#endif
 
@@ -31,6 +31,9 @@ void convertingToGray(void * pixelsColor, void * pixelsGrayColor,
 
 	for (y=0;y<infoColor->height;y++) {
 		argb * line = (argb *) pixelsColor;
+		
+		// here we use uint_8 instead of uint32_t since gray images are alpha_8 images
+		// that use 8 bit coloring system and not 32
 		uint8_t * grayline = (uint8_t *) pixelsGrayColor;
 
 		for (x=0;x<infoColor->width;x++) {
@@ -113,9 +116,9 @@ void convertingImageToSepia(AndroidBitmapInfo * infoColor, void *  pixelsColor,
 
 	/*  =====================================	*/
 	/*  For refrerence, SEPIA CODE
-		R' = (R × 0.393 + G × 0.769 + B × 0.189);
-		G' = (R × 0.349 + G × 0.686 + B × 0.168);
-		B' = (R × 0.272 + G × 0.534 + B × 0.131);
+		R' = (R ï¿½ 0.393 + G ï¿½ 0.769 + B ï¿½ 0.189);
+		G' = (R ï¿½ 0.349 + G ï¿½ 0.686 + B ï¿½ 0.168);
+		B' = (R ï¿½ 0.272 + G ï¿½ 0.534 + B ï¿½ 0.131);
 	/* 	===================================== 	*/
 
 	int y,x;
@@ -173,7 +176,13 @@ void increasingBrightnessOfImage(AndroidBitmapInfo * infogray, void* pixelsgray,
 	int y,x;
 
 	for (y=0;y<infogray->height;y++) {
-		uint8_t * line = (uint8_t *)pixelsgray;
+		//uint8_t * line = (uint8_t *)pixelsgray;
+		
+		// commenting the line above since 1/4 th of the image gets converted
+		// and not the whole, ARGB = 32 bits color system, while
+		// uint8_t uses 8bits.(convers 8 bits)
+		
+		uint32_t * line = (uint32_t *)pixelsgray;
 		for (x=0;x<infogray->width;x++) {
 
 			red = (int)((line[x] & 0x00FF0000) >> 16);
@@ -205,7 +214,13 @@ void reduceBrightnessOfImage(AndroidBitmapInfo * infogray, void* pixelsgray,
 	int y,x;
 
 	for (y=0;y<infogray->height;y++) {
-		uint8_t * line = (uint8_t *)pixelsgray;
+		// commenting the line above since 1/4 th of the image gets converted
+		// and not the whole, ARGB = 32 bits color system, while
+		// uint8_t uses 8bits.(convers 8 bits)
+		// uint8_t * line = (uint8_t *)pixelsgray;
+		
+		uint32_t * line = (uint32_t *)pixelsgray;
+		
 		for (x=0;x<infogray->width;x++) {
 
 			red = (int)((line[x] & 0x00FF0000) >> 16);
@@ -232,7 +247,13 @@ void invertImage(AndroidBitmapInfo * infogray, void * pixelsgray) {
 	int red, green, blue;
 
 	for (y=0;y<infogray->height;y++) {
-		uint8_t * line = (uint8_t *)pixelsgray;
+		// commenting the line above since 1/4 th of the image gets converted
+		// and not the whole, ARGB = 32 bits color system, while
+		// uint8_t uses 8bits.(convers 8 bits)
+		// uint8_t * line = (uint8_t *)pixelsgray;
+		
+		uint32_t * line = (uint32_t *)pixelsgray;
+		
 		for (x=0;x<infogray->width;x++) {
 
 			// subtract the value from 255
@@ -621,6 +642,6 @@ JNIEXPORT void JNICALL Java_com_example_imageprocessingusingndk_MainActivity_inv
 	AndroidBitmap_unlockPixels(env, bitmapIn);
 }
 
-//#ifdef _cplusplus
+//#ifdef __cplusplus
 }
 //#endif
